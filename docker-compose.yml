@@ -9,6 +9,11 @@ services:
    env_file:
     - ./env/console.env
     - ./env/shared.env
+   healthcheck:
+    test: curl --fail http://localhost:8080 || exit 1
+    interval: 20s
+    timeout: 1s
+    retries: 5
   gateway:
    image: ghcr.io/8xff/atm0s-media-server:master
    network_mode: "host"
@@ -18,9 +23,14 @@ services:
    env_file:
     - ./env/gateway.env
     - ./env/shared.env
+   healthcheck:
+    test: curl --fail http://localhost:3001/ui || exit 1
+    interval: 20s
+    timeout: 1s
+    retries: 5
    depends_on:
      console:
-      condition: service_started
+      condition: service_healthy
   connector:
    image: ghcr.io/8xff/atm0s-media-server:master
    network_mode: "host"
@@ -32,7 +42,7 @@ services:
     - ./env/shared.env
    depends_on:
      gateway:
-      condition: service_started
+      condition: service_healthy
   media:
    image: ghcr.io/8xff/atm0s-media-server:master
    network_mode: "host"
@@ -44,7 +54,7 @@ services:
     - ./env/shared.env
    depends_on:
      gateway:
-      condition: service_started
+      condition: service_healthy
   watchtower:
     image: containrrr/watchtower
     volumes:
